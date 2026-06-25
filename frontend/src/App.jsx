@@ -7,6 +7,8 @@ import Cart    from './pages/Cart'
 import Contact from './pages/Contact'
 import NoPageFound from './pages/NoPageFound'
 import ScrollToTop from './components/ScrollToTop'
+import Account from './pages/Account'
+import Login from './pages/Login'
 
 export default function App() {
   return (
@@ -20,6 +22,9 @@ export default function App() {
             <Route path="/shop"    element={<Shop />}    />
             <Route path="/cart"    element={<Cart />}    />
             <Route path="/contact" element={<Contact />} />
+            <Route path='/account' element={<Account/>}/>
+            <Route path='/login' element={<Login/>}/>
+
             <Route path="*" element={<NoPageFound/>} />
           </Routes>
         </div>

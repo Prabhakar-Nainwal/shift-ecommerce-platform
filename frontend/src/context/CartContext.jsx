@@ -1,39 +1,111 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from "react";
+import {
+  getCart,
+  addToCart as addToCartService,
+  updateCart,
+  removeFromCart as removeFromCartService,
+  clearCart as clearCartService,
+} from "../services/cartServices";
 
-const CartContext = createContext()
+const CartContext = createContext();
 
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState([])
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  function addToCart(product) {
-    setCartItems(prev => {
-      const existing = prev.find(i => i.id === product.id)
-      if (existing) {
-        return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i)
-      }
-      return [...prev, { ...product, qty: 1 }]
-    })
-  }
+  // Fetch Cart
+  const fetchCart = async () => {
+    try {
+      setLoading(true);
 
-  function removeFromCart(id) {
-    setCartItems(prev => prev.filter(i => i.id !== id))
-  }
+      const cart = await getCart();
 
-  function updateQty(id, qty) {
-    if (qty < 1) return removeFromCart(id)
-    setCartItems(prev => prev.map(i => i.id === id ? { ...i, qty } : i))
-  }
+      setCartItems(cart.items || []);
+    } catch (error) {
+      console.error(error);
+      setCartItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const total = cartItems.reduce((sum, i) => sum + i.price * i.qty, 0)
-  const count  = cartItems.reduce((sum, i) => sum + i.qty, 0)
+  // Add Item
+  const addToCart = async (productId) => {
+    try {
+      const cart = await addToCartService(productId);
+
+      setCartItems(cart.items);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // Update Quantity
+  const updateQty = async (productId, quantity) => {
+    try {
+      const cart = await updateCart(productId, quantity);
+
+      setCartItems(cart.items);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // Remove Item — renamed to avoid shadowing the imported removeFromCartService
+  const removeFromCart = async (productId) => {
+    try {
+      const cart = await removeFromCartService(productId);
+
+      setCartItems(cart.items);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // Clear Cart
+  const clearCart = async () => {
+    try {
+      await clearCartService();
+
+      setCartItems([]);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  const total = cartItems.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
+
+  const count = cartItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQty, total, count }}>
+    <CartContext.Provider
+      value={{
+        cartItems,
+        loading,
+        total,
+        count,
+        fetchCart,
+        addToCart,
+        updateQty,
+        removeFromCart,
+        clearCart,
+      }}
+    >
       {children}
     </CartContext.Provider>
-  )
+  );
 }
 
 export function useCart() {
-  return useContext(CartContext)
+  return useContext(CartContext);
 }
