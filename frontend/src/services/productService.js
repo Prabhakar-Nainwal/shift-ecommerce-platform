@@ -5,7 +5,7 @@ export const getProducts = () => {
 }
 
 export const getProduct = (id) => {
-  return api.get(`/product/${id}`)
+  return api.get(`/products/${id}`)
 }
 
 export const addProduct = (productData) => {

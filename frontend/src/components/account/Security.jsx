@@ -2,29 +2,22 @@ import React from 'react';
 
 export default function Security() {
   return (
-    <div>
-      <h3 className="text-xl font-semibold text-gray-700 mb-6">Security Settings</h3>
-      <div className="space-y-6">
-        <div className="p-4 border border-gray-100 bg-gray-50 rounded-xl flex justify-between items-center">
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold text-gray-800">Login & Security</h2>
+      {[
+        { label: "Name", value: "Rahul Sharma" },
+        { label: "Email", value: "rahul.sharma@email.com" },
+        { label: "Mobile Number", value: "+91 98765 43210" },
+        { label: "Password", value: "••••••••••••" },
+      ].map((row) => (
+        <div key={row.label} className="border border-gray-200 rounded-lg p-4 flex justify-between items-center">
           <div>
-            <h4 className="text-sm font-semibold text-gray-800">Two-Factor Authentication</h4>
-            <p className="text-xs text-gray-500">Secure your account with an extra verification layer.</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide">{row.label}</p>
+            <p className="font-medium text-gray-800 mt-0.5">{row.value}</p>
           </div>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-medium hover:bg-blue-600">
-            Enable
-          </button>
+          <button className="text-sm text-blue-600 hover:underline font-medium">Edit</button>
         </div>
-        
-        <div className="p-4 border border-gray-100 bg-gray-50 rounded-xl flex justify-between items-center">
-          <div>
-            <h4 className="text-sm font-semibold text-gray-800">Active Sessions</h4>
-            <p className="text-xs text-gray-500">View and manage devices currently logged into your profile.</p>
-          </div>
-          <button className="text-xs text-gray-500 hover:text-red-500 font-medium">
-            Manage
-          </button>
-        </div>
-      </div>
+      ))}
     </div>
   );
 }

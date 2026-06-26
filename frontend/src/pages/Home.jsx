@@ -33,7 +33,7 @@ return (
 
     {/* Hero */}
     <section className="border-b border-[#E2DDD8] px-8 pt-16 pb-14">
-      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-14 items-center">
+      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-14 items-center">
         <div>
           <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[#9A8C7E] mb-6 flex items-center gap-3 before:block before:w-6 before:h-px before:bg-[#9A8C7E]">
             Free shipping on orders over $50

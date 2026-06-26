@@ -1,26 +1,44 @@
 import { useState } from "react";
-import { loginUser, registerUser } from '../services/authServices'
+import { useAuth } from "../context/AuthContext";
 import { Navigate, useNavigate } from 'react-router-dom'
 
 
 export default function AuthPage() {
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormdata] = useState({name:"", email:"", password:""})
-  const handleSubmit = async(e) => {
+  const [formData, setFormdata] = useState({ name: "", email: "", password: "" })
+  const [message,setMessage] = useState("")
+  const { login, register } = useAuth();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if(!isLogin){
-      const resRegister = await registerUser(formData);
-    }
-    else{
-      const resLogin = await loginUser(formData);
-      Navigate('/shop',{ replace: true })
-    }
-  }
 
+    try {
+      if (isLogin) {
+        await login(formData);
+        navigate("/shop", { replace: true });
+      } else {
+        await register(formData);
 
-  const handleChange=(e)=>{
-    setFormdata({...formData,[e.target.name]:e.target.value })
+        setMessage(
+          "Registration successful! You can now log in with your email and password."
+        );
+
+        setFormdata({
+          name: "",
+          email: "",
+          password: "",
+        });
+
+        setIsLogin(true);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormdata({ ...formData, [e.target.name]: e.target.value })
   }
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
@@ -35,6 +53,11 @@ export default function AuthPage() {
             ? "Sign in to continue"
             : "Create your account to get started"}
         </p>
+        {message && (
+          <div className="mb-4 rounded-lg bg-green-100 border border-green-300 text-green-700 p-3">
+            {message}
+          </div>
+        )}
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           {!isLogin && (

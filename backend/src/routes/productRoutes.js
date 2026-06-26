@@ -4,16 +4,16 @@ const { addProduct, getProducts, getProduct, activateProduct, deactivateProduct,
 const protect = require("../middlewares/protect")
 
 
-router.post("/", addProduct)
+router.post("/",protect, addProduct)
 
-router.get("/",protect,getProducts)
+router.get("/",getProducts)
 router.get("/:id", getProduct)
 
-router.delete("/:id",deleteProduct)
+router.delete("/:id",protect,deleteProduct)
 
-router.patch("/:id", updateProduct)
-router.patch("/:id/activate", activateProduct)
-router.patch("/:id/deactivate", deactivateProduct)
+router.patch("/:id",protect, updateProduct)
+router.patch("/:id/activate", protect, activateProduct)
+router.patch("/:id/deactivate", protect, deactivateProduct)
 
 
 

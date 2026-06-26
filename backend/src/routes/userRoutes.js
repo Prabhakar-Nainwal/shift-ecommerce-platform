@@ -1,16 +1,16 @@
-const {getUsers, getUser, updateUser, deleteUser, addUser, getCurrentUser} = require('../controllers/userController')
-const auth = require('../middlewares/protect')
+const {getUsers, getUser, updateUser, deleteUser, addUser, getProfile} = require('../controllers/userController')
+const protect = require('../middlewares/protect')
 const express = require('express')
 const router = express.Router()
 
-router.post("/", addUser)
+router.post("/",protect, addUser)
 
 
-router.get("/",getUsers)
-router.get("/me", auth, getCurrentUser)
-router.get("/:id",getUser)
+router.get("/",protect,getUsers)
+router.get("/me",protect, getProfile)
+router.get("/:id",protect,getUser)
 
-router.patch("/:id",updateUser)
-router.delete("/:id", deleteUser)
+router.patch("/:id",protect,updateUser)
+router.delete("/:id",protect, deleteUser)
 
 module.exports = router

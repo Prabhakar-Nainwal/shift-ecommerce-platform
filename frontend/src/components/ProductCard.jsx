@@ -1,7 +1,17 @@
 import { useCart } from '../context/CartContext'
-
+import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 export default function ProductCard({ product }) {
   const { addToCart } = useCart()
+  const { user } = useAuth()
+  const navigate = useNavigate();
+
+  const handleAddToCart = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) { navigate("/login") }
+    else { await addToCart(product._id) }
+  }
 
   return (
     <div className="group bg-white border border-[#E2DDD8] rounded-xl overflow-hidden
@@ -21,9 +31,9 @@ export default function ProductCard({ product }) {
           <span className={`absolute top-2.5 left-2.5 text-[10px] font-semibold uppercase tracking-wider
                             px-2 py-1 rounded
                             ${product.badge === 'Sale'
-                              ? 'bg-[#F7C1C1] text-[#791F1F]'
-                              : 'bg-[#1A1A1A] text-[#FAFAF8]'
-                            }`}>
+              ? 'bg-[#F7C1C1] text-[#791F1F]'
+              : 'bg-[#1A1A1A] text-[#FAFAF8]'
+            }`}>
             {product.badge}
           </span>
         )}
@@ -33,7 +43,7 @@ export default function ProductCard({ product }) {
                         translate-y-full group-hover:translate-y-0
                         transition-transform duration-300 ease-out">
           <button
-            onClick={() => addToCart(product._id)}
+            onClick={handleAddToCart}
             className="w-full bg-[#1A1A1A] text-[#FAFAF8] py-3
                        text-[11px] font-semibold uppercase tracking-widest
                        transition-colors duration-150 hover:bg-[#333]

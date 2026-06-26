@@ -1,15 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import {
-  getCart,
-  addToCart as addToCartService,
-  updateCart,
-  removeFromCart as removeFromCartService,
-  clearCart as clearCartService,
-} from "../services/cartServices";
+import { getCart, addToCart as addToCartService, updateCart, removeFromCart as removeFromCartService, clearCart as clearCartService, } from "../services/cartServices";
+import { useAuth } from "./AuthContext";
+
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
+  const { user } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -30,9 +27,9 @@ export function CartProvider({ children }) {
   };
 
   // Add Item
-  const addToCart = async (productId) => {
+  const addToCart = async (productId,quantity) => {
     try {
-      const cart = await addToCartService(productId);
+      const cart = await addToCartService(productId,quantity);
 
       setCartItems(cart.items);
     } catch (error) {
@@ -73,9 +70,16 @@ export function CartProvider({ children }) {
     }
   };
 
+
   useEffect(() => {
-    fetchCart();
-  }, []);
+
+    if (user) {
+      fetchCart();
+    } else {
+      setCartItems([]);
+    }
+
+  }, [user]);
 
   const total = cartItems.reduce(
     (sum, item) => sum + item.product.price * item.quantity,

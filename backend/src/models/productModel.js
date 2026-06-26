@@ -15,6 +15,7 @@ const productSchema = new mongoose.Schema(
         tags: [{
             type: String, enum: ["Fitness", "Health", "Gaming", "Wireless", "Smart", "Portable", "Eco-Friendly", "Organic", "Professional", "Casual", "Outdoor", "Indoor", "Luxury", "Educational", "Kids", "Men", "Women", "Travel", "Wearable"] }],
         images: [String],
+        highlights: [String],
         rating: { type: Number, default: 0, min: 0, max: 5 },
         numReviews: { type: Number, default: 0, min: 0 },
         discountPercentage: { type: Number, default: 0, },

@@ -16,7 +16,7 @@ export default function Contact() {
 
 
 return (
-  <main className="max-w-5xl mx-auto px-8 py-14">
+  <main className="max-w-7xl mx-auto px-8 py-14">
 
     {/* Page header */}
     <div className="border-b border-[#E2DDD8] pb-6 mb-12">

@@ -3,6 +3,7 @@ import { getProducts} from '../services/productService'
 import ProductCard from '../components/ProductCard'
 import { useEffect } from 'react'
 import { Search } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 export default function Shop() {
   const [activeCategory, setActiveCategory] = useState('All')
@@ -41,20 +42,7 @@ export default function Shop() {
     })
 
 return (
-  <main className="max-w-5xl mx-auto px-8 py-14">
-
-    {/* Page header */}
-    <div className="border-b border-[#E2DDD8] pb-6 mb-10">
-      <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[#9A8C7E] mb-3
-                    flex items-center gap-3 before:block before:w-6 before:h-px before:bg-[#9A8C7E]">
-        Our collection
-      </p>
-      <h1 className="font-serif text-[42px] leading-none text-[#1A1A1A]">Shop</h1>
-      <p className="text-[15px] text-[#9A8C7E] mt-2">
-        Discover our full collection of curated products.
-      </p>
-    </div>
-
+  <main className="max-w-7xl mx-auto px-8 py-14">
     {/* Filters row */}
     <div className="flex flex-col sm:flex-row gap-3 mb-8">
 
@@ -124,7 +112,7 @@ return (
       </div>
     ) : (
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-        {filtered.map(p => <ProductCard key={p._id} product={p} />)}
+        {filtered.map(p =><Link to={`/products/${p._id}`}  key={p._id}> <ProductCard  product={p} /></Link>)}
       </div>
     )}
   </main>

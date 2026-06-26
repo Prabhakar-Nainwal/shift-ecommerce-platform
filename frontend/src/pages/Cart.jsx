@@ -1,12 +1,48 @@
 import { Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { Trash2, ShoppingBag, ArrowRight, Tag } from 'lucide-react'
+import { createOrder } from '../services/orderServices'
+import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
+
 export default function Cart() {
-  
-  const { cartItems, removeFromCart, updateQty, total } = useCart()
+  const { cartItems, removeFromCart, updateQty, total, clearCart } = useCart()
+  const { user } = useAuth()
+  const navigate = useNavigate();
+
+  const handleCheckout = async () => {
+    try {
+      if (cartItems.length === 0) return;
+      const defaultAddress = user.addresses.find(
+        address => address.isDefault
+      );
+
+      if (!defaultAddress) {
+        alert("Please add a default shipping address.");
+        navigate("/account/addresses");
+        return;
+      }
+      const order = {
+        items: cartItems.map(item => ({
+          product: item.product._id,
+          name: item.product.name,
+          image: item.product.coverImage,
+          price: item.product.price,
+          quantity: item.quantity
+        })),
+        shippingAddress: defaultAddress,
+        totalAmount: total >= 50 ? total : total + 5
+      };
+      const res = await createOrder(order);
+      clearCart();
+      navigate("/account/orders");
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
-    <main className="max-w-5xl mx-auto px-8 py-14">
+    <main className="max-w-7xl mx-auto px-8 py-14">
 
       {/* Page header */}
       <div className="border-b border-[#E2DDD8] pb-6 mb-10">
@@ -44,7 +80,7 @@ export default function Cart() {
           <div className="lg:col-span-2 space-y-3">
             {cartItems.map(item => (
               <div
-                key={item.id}
+                key={item.product._id}
                 className="group flex gap-4 bg-white border border-[#E2DDD8] rounded-xl p-4
                          transition-all duration-200
                          hover:border-[#C5BFB8] hover:shadow-[0_4px_16px_rgba(0,0,0,0.05)]"
@@ -52,8 +88,8 @@ export default function Cart() {
                 {/* Image */}
                 <div className="w-20 h-20 rounded-lg overflow-hidden bg-[#F0ECE7] flex-shrink-0">
                   <img
-                    src={item.image}
-                    alt={item.name}
+                    src={item.product.coverImage}
+                    alt={item.product.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
@@ -61,11 +97,11 @@ export default function Cart() {
                 {/* Details */}
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] font-medium uppercase tracking-widest text-[#C5BFB8] mb-0.5">
-                    {item.category}
+                    {item.product.category}
                   </p>
                   <h3 className="text-[14px] font-medium text-[#1A1A1A] truncate
                                transition-colors duration-200 group-hover:text-[#C8A97E]">
-                    {item.name}
+                    {item.product.name}
                   </h3>
 
                   <div className="flex items-center justify-between mt-3">
@@ -73,7 +109,7 @@ export default function Cart() {
                     <div className="flex items-center border border-[#E2DDD8] rounded-md overflow-hidden
                                   transition-colors duration-200 hover:border-[#C5BFB8]">
                       <button
-                        onClick={() => updateQty(item.id, item.qty - 1)}
+                        onClick={() => updateQty(item.product._id, item.quantity - 1)}
                         className="w-8 h-8 flex items-center justify-center text-[#9A8C7E] text-lg
                                  transition-all duration-150 hover:bg-[#F0ECE7] hover:text-[#1A1A1A]
                                  active:scale-90"
@@ -82,10 +118,10 @@ export default function Cart() {
                       </button>
                       <span className="w-8 h-8 flex items-center justify-center text-[13px] font-medium
                                      text-[#1A1A1A] border-x border-[#E2DDD8]">
-                        {item.qty}
+                        {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateQty(item.id, item.qty + 1)}
+                        onClick={() => updateQty(item.product._id, item.quantity + 1)}
                         className="w-8 h-8 flex items-center justify-center text-[#9A8C7E] text-lg
                                  transition-all duration-150 hover:bg-[#F0ECE7] hover:text-[#1A1A1A]
                                  active:scale-90"
@@ -95,14 +131,14 @@ export default function Cart() {
                     </div>
 
                     <span className="font-serif text-[17px] text-[#1A1A1A]">
-                      ${(item.price * item.qty).toFixed(2)}
+                      ${(item.product.price * item.quantity).toFixed(2)}
                     </span>
                   </div>
                 </div>
 
                 {/* Remove */}
                 <button
-                  onClick={() => removeFromCart(item.id)}
+                  onClick={() => removeFromCart(item.product._id)}
                   className="flex-shrink-0 self-start mt-1 p-1.5 rounded-md text-[#C5BFB8]
                            transition-all duration-200
                            hover:text-[#791F1F] hover:bg-[#F7C1C1]/40
@@ -159,6 +195,7 @@ export default function Cart() {
                          transition-all duration-200
                          hover:bg-[#333] hover:-translate-y-0.5 hover:shadow-md
                          active:translate-y-0 active:shadow-none"
+                onClick={handleCheckout}
               >
                 Checkout
                 <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />

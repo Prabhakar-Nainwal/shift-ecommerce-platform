@@ -26,8 +26,7 @@ const getCart = async (req, res) => {
 
 const addToCart = async (req, res) => {
   try {
-
-    const { productId } = req.body;
+    const { productId, quantity = 1 } = req.body;
 
     const product = await Product.findById(productId);
 
@@ -36,7 +35,6 @@ const addToCart = async (req, res) => {
         message: "Product not found"
       });
     }
-
     let cart = await cartModel.findOne({
       user: req.user._id
     });
@@ -53,18 +51,17 @@ const addToCart = async (req, res) => {
     );
 
     if (existingItem) {
-      existingItem.quantity += 1;
+      existingItem.quantity += quantity;
     } else {
       cart.items.push({
         product: productId,
-        quantity: 1
+        quantity
       });
     }
 
     await cart.save();
-
+    
     await cart.populate("items.product");
-
     res.status(200).json(cart);
 
   } catch (error) {

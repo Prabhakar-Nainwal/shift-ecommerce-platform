@@ -33,18 +33,15 @@ const getUsers = async (req, res) => {
     }
 }
 
-const getCurrentUser = async (req, res) => {
-try {
-        res.status(200).json({
-        success: true,
-        data: req.user
-    });
-} catch (error) {
-    res.send(500).json({
-        success:false,
-        message:error.message
-    })
-}
+
+const getProfile = async (req, res) => {
+    try {
+        res.status(200).json(req.user);
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
 };
 
 const getUser = async (req, res) => {
@@ -94,4 +91,4 @@ const updateUser = async (req, res) => {
 
 
 
-module.exports = {addUser, getUsers, getUser, updateUser, deleteUser, getCurrentUser}
+module.exports = {addUser, getUsers, getUser, updateUser, deleteUser, getProfile}
