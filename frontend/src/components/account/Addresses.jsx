@@ -1,32 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { MapPin, Phone, Plus, Pencil, Trash2, Check, X, Star } from 'lucide-react'
-
-const INITIAL_ADDRESSES = [
-  {
-    id: '1',
-    fullName: 'Aryan Mehta',
-    phone: '9876543210',
-    addressLine1: '42, MG Road',
-    addressLine2: 'Indiranagar',
-    city: 'Bengaluru',
-    state: 'Karnataka',
-    pincode: '560038',
-    country: 'India',
-    isDefault: true,
-  },
-  {
-    id: '2',
-    fullName: 'Aryan Mehta',
-    phone: '9876543210',
-    addressLine1: 'WeWork Galaxy, 43',
-    addressLine2: 'Residency Road',
-    city: 'Bengaluru',
-    state: 'Karnataka',
-    pincode: '560025',
-    country: 'India',
-    isDefault: false,
-  },
-]
+import { getAddresses, updateAddresses } from "../../services/userServices"
 
 const EMPTY_FORM = {
   fullName: '', phone: '',
@@ -35,25 +9,18 @@ const EMPTY_FORM = {
   isDefault: false,
 }
 
-function Field({ label, name, value, onChange, placeholder, half }) {
-  return (
-    <div className={half ? '' : 'col-span-2'} style={{ gridColumn: half ? 'span 1' : 'span 2' }}>
-      <label className="block text-[11px] font-medium tracking-widest uppercase text-[#9A8C7E] mb-1.5">
-        {label}
-      </label>
-      <input
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="w-full px-3.5 py-2.5 bg-white border border-[#E2DDD8] rounded-md text-[13px]
-                   text-[#1A1A1A] placeholder:text-[#C5BFB8]
-                   focus:outline-none focus:border-[#1A1A1A] focus:ring-2 focus:ring-black/5
-                   transition-all duration-200"
-      />
-    </div>
-  )
-}
+const inputCls = "w-full px-3 py-2 border border-[#D5D9D9] rounded text-sm text-[#0F1111] placeholder:text-[#767676] focus:outline-none focus:border-[#007185] focus:ring-2 focus:ring-[#007185]/20 transition"
+
+const FIELDS = [
+  { label: 'Full name',        name: 'fullName',     placeholder: 'Full name',                 half: true  },
+  { label: 'Phone number',     name: 'phone',        placeholder: 'Phone number',              half: true  },
+  { label: 'Address line 1',   name: 'addressLine1', placeholder: 'House no., Street',         half: false },
+  { label: 'Address line 2',   name: 'addressLine2', placeholder: 'Area, Landmark (optional)', half: false },
+  { label: 'City',             name: 'city',         placeholder: 'City',                      half: true  },
+  { label: 'State',            name: 'state',        placeholder: 'State',                     half: true  },
+  { label: 'Pincode',          name: 'pincode',      placeholder: 'Pincode',                   half: true  },
+  { label: 'Country',          name: 'country',      placeholder: 'Country',                   half: true  },
+]
 
 function AddressForm({ initial, onSave, onCancel, isNew }) {
   const [form, setForm] = useState({ ...(initial || EMPTY_FORM) })
@@ -64,52 +31,39 @@ function AddressForm({ initial, onSave, onCancel, isNew }) {
   }
 
   return (
-    <div className="border border-[#1A1A1A]/10 rounded-xl overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#E2DDD8] bg-white">
-        <p className="text-[13px] font-medium text-[#1A1A1A]">{isNew ? 'New address' : 'Edit address'}</p>
-        <button onClick={onCancel} className="p-1 rounded-md text-[#9A8C7E] hover:text-[#1A1A1A] hover:bg-[#F0ECE7] transition-all">
+    <div className="border border-[#D5D9D9] rounded-lg overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 bg-[#F0F2F2] border-b border-[#D5D9D9]">
+        <p className="text-sm font-semibold text-[#0F1111]">{isNew ? 'Add a new address' : 'Edit address'}</p>
+        <button onClick={onCancel} className="text-[#565959] hover:text-[#0F1111] transition">
           <X className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="p-5 bg-[#FAFAF8]">
-        <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
-          <Field label="Full name"      name="fullName"      value={form.fullName}      onChange={handle} placeholder="Full name"           half />
-          <Field label="Phone"          name="phone"         value={form.phone}         onChange={handle} placeholder="Phone number"        half />
-          <Field label="Address line 1" name="addressLine1"  value={form.addressLine1}  onChange={handle} placeholder="House no., Street" />
-          <Field label="Address line 2" name="addressLine2"  value={form.addressLine2}  onChange={handle} placeholder="Area, Landmark (optional)" />
-          <Field label="City"           name="city"          value={form.city}          onChange={handle} placeholder="City"                half />
-          <Field label="State"          name="state"         value={form.state}         onChange={handle} placeholder="State"               half />
-          <Field label="Pincode"        name="pincode"       value={form.pincode}       onChange={handle} placeholder="Pincode"             half />
-          <Field label="Country"        name="country"       value={form.country}       onChange={handle} placeholder="Country"             half />
+      <div className="p-4 bg-white">
+        <div className="grid grid-cols-2 gap-3">
+          {FIELDS.map(({ label, name, placeholder, half }) => (
+            <div key={name} className={half ? '' : 'col-span-2'}>
+              <label className="block text-xs font-medium text-[#0F1111] mb-1">{label}</label>
+              <input name={name} value={form[name]} onChange={handle} placeholder={placeholder} className={inputCls} />
+            </div>
+          ))}
         </div>
 
-        <label className="flex items-center gap-2.5 mt-5 cursor-pointer w-fit">
-          <input
-            type="checkbox"
-            name="isDefault"
-            checked={form.isDefault}
-            onChange={handle}
-            className="w-4 h-4 accent-black rounded"
-          />
-          <span className="text-[13px] text-[#6B6358]">Set as default address</span>
+        <label className="flex items-center gap-2 mt-4 cursor-pointer w-fit">
+          <input type="checkbox" name="isDefault" checked={form.isDefault} onChange={handle} className="w-4 h-4 accent-[#007185]" />
+          <span className="text-sm text-[#0F1111]">Make this my default address</span>
         </label>
 
-        <div className="flex gap-3 mt-5">
+        <div className="flex gap-2 mt-4">
           <button
             onClick={() => onSave(form)}
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#1A1A1A] text-[#FAFAF8] rounded-md
-                       text-[12px] font-medium uppercase tracking-wider
-                       hover:bg-[#2D2D2D] active:scale-[0.98] transition-all duration-200"
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] rounded text-sm font-medium text-[#0F1111] transition active:scale-[0.98]"
           >
             <Check className="w-3.5 h-3.5" /> Save address
           </button>
           <button
             onClick={onCancel}
-            className="px-5 py-2.5 border border-[#E2DDD8] rounded-md text-[12px] font-medium
-                       uppercase tracking-wider text-[#6B6358]
-                       hover:border-[#1A1A1A] hover:text-[#1A1A1A] hover:bg-[#F0ECE7]
-                       active:scale-[0.98] transition-all duration-200"
+            className="px-4 py-2 border border-[#D5D9D9] rounded text-sm text-[#0F1111] hover:bg-[#F0F2F2] transition active:scale-[0.98]"
           >
             Cancel
           </button>
@@ -119,143 +73,153 @@ function AddressForm({ initial, onSave, onCancel, isNew }) {
   )
 }
 
-function AddressCard({ address, onEdit, onDelete, onSetDefault }) {
-  const [confirmDelete, setConfirmDelete] = useState(false)
-
-  const fullAddress = [
-    address.addressLine1, address.addressLine2,
-    address.city, address.state, address.pincode, address.country
-  ].filter(Boolean).join(', ')
-
-  return (
-    <div className={`group border rounded-xl p-5 bg-white transition-all duration-200
-                     hover:shadow-md hover:-translate-y-0.5
-                     ${address.isDefault ? 'border-[#1A1A1A]' : 'border-[#E2DDD8] hover:border-[#C5BFB8]'}`}>
-
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div>
-          <p className="text-[14px] font-semibold text-[#1A1A1A]">{address.fullName}</p>
-          <p className="text-[12px] text-[#9A8C7E] flex items-center gap-1 mt-0.5">
-            <Phone className="w-3 h-3" /> {address.phone}
-          </p>
-        </div>
-        {address.isDefault ? (
-          <span className="flex items-center gap-1 text-[10px] font-semibold tracking-wider uppercase
-                           bg-[#1A1A1A] text-[#FAFAF8] px-2.5 py-1 rounded-full shrink-0">
-            <Star className="w-2.5 h-2.5 fill-current" /> Default
-          </span>
-        ) : (
-          <button
-            onClick={onSetDefault}
-            className="text-[10px] font-medium uppercase tracking-wider text-[#9A8C7E]
-                       border border-[#E2DDD8] px-2.5 py-1 rounded-full shrink-0
-                       opacity-0 group-hover:opacity-100 transition-all duration-200
-                       hover:border-[#1A1A1A] hover:text-[#1A1A1A]"
-          >
-            Set default
-          </button>
-        )}
-      </div>
-
-      <p className="text-[13px] text-[#6B6358] leading-relaxed flex items-start gap-1.5 mb-4">
-        <MapPin className="w-3.5 h-3.5 text-[#C5BFB8] mt-0.5 shrink-0" />
-        {fullAddress}
-      </p>
-
-      <div className="flex items-center gap-1 pt-3 border-t border-[#F0ECE7]">
-        <button
-          onClick={onEdit}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px]
-                     text-[#6B6358] hover:bg-[#F0ECE7] hover:text-[#1A1A1A] transition-all duration-200"
-        >
-          <Pencil className="w-3 h-3" /> Edit
-        </button>
-
-        <div className="w-px h-3 bg-[#E2DDD8] mx-1" />
-
-        {!confirmDelete ? (
-          <button
-            onClick={() => setConfirmDelete(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[12px]
-                       text-[#9A8C7E] hover:bg-rose-50 hover:text-rose-600 transition-all duration-200"
-          >
-            <Trash2 className="w-3 h-3" /> Remove
-          </button>
-        ) : (
-          <div className="flex items-center gap-1.5 ml-1">
-            <span className="text-[12px] text-[#9A8C7E]">Remove this address?</span>
-            <button onClick={onDelete} className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-rose-600 text-white hover:bg-rose-700 transition-colors">
-              Yes
-            </button>
-            <button onClick={() => setConfirmDelete(false)} className="px-2.5 py-1 rounded-md text-[11px] text-[#6B6358] hover:bg-[#F0ECE7] transition-colors">
-              No
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
 export default function Addresses() {
-  const [addresses, setAddresses] = useState(INITIAL_ADDRESSES)
+  const [addresses, setAddresses] = useState([])
   const [editingId, setEditingId] = useState(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
 
-  const handleSave = (form) => {
-    if (editingId === 'new') {
-      const newAddr = { ...form, id: Date.now().toString() }
-      setAddresses(prev => {
-        const list = form.isDefault ? prev.map(a => ({ ...a, isDefault: false })) : prev
-        return [...list, newAddr]
-      })
-    } else {
-      setAddresses(prev => {
-        const list = form.isDefault ? prev.map(a => ({ ...a, isDefault: false })) : prev
-        return list.map(a => a.id === editingId ? { ...form, id: a.id } : a)
-      })
+  useEffect(() => {
+    fetchAddresses();
+  }, []);
+
+  const fetchAddresses = async () => {
+    try {
+      const res = await getAddresses();
+      setAddresses(res.data);
+    } catch (err) {
+      console.log(err);
     }
+  };
+
+  const saveToBackend = async (updatedAddresses) => {
+    try {
+      await updateAddresses(updatedAddresses);
+      await fetchAddresses();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleSave = async (form) => {
+    let updatedList = [];
+    if (editingId === 'new') {
+      const newAddr = { ...form }
+      const list = form.isDefault ? addresses.map(a => ({ ...a, isDefault: false })) : addresses
+      updatedList = [...list, newAddr]
+    } else {
+      const list = form.isDefault ? addresses.map(a => ({ ...a, isDefault: false })) : addresses
+      updatedList = list.map(a => a._id === editingId ? { ...form, _id: a._id } : a)
+    }
+    
     setEditingId(null)
+    setAddresses(updatedList);
+    await saveToBackend(updatedList)
+  }
+
+  const handleDelete = async (addrId) => {
+    const updated = addresses.filter(a => a._id !== addrId);
+    if (updated.length && !updated.some(a => a.isDefault)) {
+      updated[0].isDefault = true;
+    }
+    setConfirmDeleteId(null)
+    setAddresses(updated);
+    await saveToBackend(updated)
+  }
+
+  const handleSetDefault = async (addrId) => {
+    const updated = addresses.map(a => ({
+      ...a,
+      isDefault: a._id === addrId
+    }))
+    setAddresses(updated);
+    await saveToBackend(updated)
   }
 
   return (
     <div className="max-w-2xl">
-      <div className="border-b border-[#E2DDD8] pb-5 mb-8">
-        <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[#9A8C7E] mb-2
-                      flex items-center gap-3 before:block before:w-6 before:h-px before:bg-[#9A8C7E]">
-          Saved locations
-        </p>
-        <h2 className="font-serif text-[28px] leading-none text-[#1A1A1A]">Your Addresses</h2>
-        <p className="text-[13px] text-[#9A8C7E] mt-1.5">{addresses.length} saved</p>
+      <div className="border-b border-[#E7E7E7] pb-4 mb-6">
+        <h2 className="text-2xl font-bold text-[#0F1111]">Your Addresses</h2>
+        <p className="text-sm text-[#565959] mt-0.5">{addresses.length} saved</p>
       </div>
 
-      <div className="space-y-4">
-        {addresses.map(addr =>
-          editingId === addr.id ? (
-            <AddressForm key={addr.id} initial={addr} onSave={handleSave} onCancel={() => setEditingId(null)} />
-          ) : (
-            <AddressCard
-              key={addr.id}
-              address={addr}
-              onEdit={() => setEditingId(addr.id)}
-              onDelete={() => setAddresses(prev => prev.filter(a => a.id !== addr.id))}
-              onSetDefault={() => setAddresses(prev => prev.map(a => ({ ...a, isDefault: a.id === addr.id })))}
-            />
-          )
-        )}
-
+      <div className="space-y-3">
         {editingId === 'new' ? (
-          <AddressForm isNew onSave={handleSave} onCancel={() => setEditingId(null)} />
+          <AddressForm key="new" isNew onSave={handleSave} onCancel={() => setEditingId(null)} />
         ) : (
           <button
             onClick={() => setEditingId('new')}
-            className="w-full flex items-center justify-center gap-2
-                       border-2 border-dashed border-[#E2DDD8] rounded-xl py-4
-                       text-[13px] font-medium text-[#9A8C7E]
-                       hover:border-[#1A1A1A] hover:text-[#1A1A1A] hover:bg-[#F5F2EE]
-                       active:scale-[0.99] transition-all duration-200"
+            className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-[#D5D9D9] rounded-lg py-4 text-sm font-medium text-[#007185] hover:border-[#007185] hover:bg-[#F0F9FA] transition-all active:scale-[0.99]"
           >
-            <Plus className="w-4 h-4" /> Add new address
+            <Plus className="w-4 h-4" /> Add a new address
           </button>
+        )}
+
+        {addresses.map(addr =>
+          editingId === addr._id ? (
+            <AddressForm key={addr._id} initial={addr} onSave={handleSave} onCancel={() => setEditingId(null)} />
+          ) : (
+            <div key={addr._id} className={`border rounded-lg p-4 bg-white hover:shadow-sm transition-all ${addr.isDefault ? 'border-[#007185]' : 'border-[#D5D9D9]'}`}>
+
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-sm font-bold text-[#0F1111]">{addr.fullName}</p>
+                {addr.isDefault && (
+                  <span className="flex items-center gap-1 text-[10px] font-semibold bg-[#007185] text-white px-2 py-0.5 rounded-full">
+                    <Star className="w-2.5 h-2.5 fill-current" /> Default
+                  </span>
+                )}
+              </div>
+
+              <p className="text-xs text-[#565959] flex items-center gap-1 mb-2">
+                <Phone className="w-3 h-3" /> {addr.phone}
+              </p>
+
+              <p className="text-sm text-[#0F1111] leading-relaxed flex items-start gap-1.5 mb-3">
+                <MapPin className="w-3.5 h-3.5 text-[#565959] mt-0.5 shrink-0" />
+                {[addr.addressLine1, addr.addressLine2, addr.city, addr.state, addr.pincode, addr.country].filter(Boolean).join(', ')}
+              </p>
+
+              <div className="flex items-center gap-0.5 pt-3 border-t border-[#E7E7E7] text-xs">
+                <button 
+                  onClick={() => {
+                    setConfirmDeleteId(null);
+                    setEditingId(addr._id);
+                  }} 
+                  className="flex items-center gap-1 px-2.5 py-1 text-[#007185] hover:underline"
+                >
+                  <Pencil className="w-3 h-3" /> Edit
+                </button>
+                <span className="text-[#D5D9D9]">|</span>
+                {confirmDeleteId === addr._id ? (
+                  <div className="flex items-center gap-1.5 px-2">
+                    <span className="text-[#565959]">Remove this address?</span>
+                    <button
+                      onClick={() => handleDelete(addr._id)}
+                      className="px-2 py-0.5 rounded bg-[#CC0C39] text-white hover:bg-[#B0092F] text-[11px] font-medium transition"
+                    >Yes</button>
+                    <button
+                      onClick={() => setConfirmDeleteId(null)}
+                      className="px-2 py-0.5 rounded border border-[#D5D9D9] text-[#0F1111] hover:bg-[#F0F2F2] text-[11px] transition"
+                    >No</button>
+                  </div>
+                ) : (
+                  <button onClick={() => setConfirmDeleteId(addr._id)} className="flex items-center gap-1 px-2.5 py-1 text-[#007185] hover:underline">
+                    <Trash2 className="w-3 h-3" /> Remove
+                  </button>
+                )}
+                {!addr.isDefault && (
+                  <>
+                    <span className="text-[#D5D9D9]">|</span>
+                    <button
+                      onClick={() => handleSetDefault(addr._id)}
+                      className="px-2.5 py-1 text-[#007185] hover:underline"
+                    >
+                      Set as default
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          )
         )}
       </div>
     </div>

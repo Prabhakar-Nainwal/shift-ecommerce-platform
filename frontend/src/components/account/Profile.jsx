@@ -1,77 +1,56 @@
 export default function Profile() {
   return (
     <div className="min-h-screen bg-slate-100 py-10 px-4">
-      <div className="max-w-xl mx-auto bg-white rounded-2xl shadow-md p-8">
+      <div className="max-w-md mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
 
-        <h2 className="text-3xl font-bold text-slate-800">
-          My Profile
-        </h2>
-
-        <p className="text-slate-500 mt-1 mb-8">
-          Update your personal information.
-        </p>
-
-        <form className="space-y-5">
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Full Name
-            </label>
-            <input
-              type="text"
-              placeholder="John Doe"
-              className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
-            />
+        {/* Avatar + intro */}
+        <div className="flex items-center gap-4 mb-7">
+          <div className="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold text-lg flex-shrink-0">
+            JD
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              placeholder="john@gmail.com"
-              className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
-            />
+            <p className="font-semibold text-slate-800 text-base">John Doe</p>
+            <p className="text-sm text-slate-400">Edit your profile below</p>
           </div>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Phone Number
-            </label>
-            <input
-              type="text"
-              placeholder="+91 9876543210"
-              className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
+        <form className="space-y-4">
 
-          <hr className="my-6" />
+          {[
+            { label: 'Full name',     type: 'text',     placeholder: 'John Doe' },
+            { label: 'Email',         type: 'email',    placeholder: 'john@gmail.com' },
+            { label: 'Phone number',  type: 'text',     placeholder: '+91 9876543210' },
+          ].map(({ label, type, placeholder }) => (
+            <div key={label}>
+              <label className="block text-xs font-medium text-slate-500 mb-1.5">{label}</label>
+              <input
+                type={type}
+                placeholder={placeholder}
+                className="w-full border border-slate-200 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 rounded-lg px-3.5 py-2.5 text-sm outline-none transition"
+              />
+            </div>
+          ))}
 
-          <h3 className="text-lg font-semibold text-slate-800">
-            Security Verification
-          </h3>
+          <hr className="border-slate-100 my-2" />
 
-          <p className="text-sm text-slate-500">
-            Enter your current password to save changes.
+          <p className="text-[11px] font-semibold text-slate-400 tracking-widest uppercase">
+            Security verification
           </p>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Current Password
-            </label>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">Current password</label>
             <input
               type="password"
-              placeholder="••••••••"
-              className="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Enter your password to save"
+              className="w-full border border-slate-200 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 rounded-lg px-3.5 py-2.5 text-sm outline-none transition"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-medium transition"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white py-2.5 rounded-lg text-sm font-medium transition"
           >
-            Save Changes
+            Save changes
           </button>
 
         </form>

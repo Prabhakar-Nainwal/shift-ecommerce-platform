@@ -41,34 +41,47 @@ const IconHeadset = () => (
     <circle cx="32" cy="50" r="3" fill="#0d9488" />
   </svg>
 );
+const IconUser = () => (
+  <svg viewBox="0 0 64 64" fill="none" className="w-10 h-10">
+    <circle cx="32" cy="32" r="24" fill="#E0F2FE" />
+    <circle cx="32" cy="24" r="8" fill="#0284C7" />
+    <path d="M16 46C16 38.268 23.1633 34 32 34C40.8367 34 48 38.268 48 46" stroke="#0284C7" strokeWidth="4" strokeLinecap="round" fill="none" />
+  </svg>
+);
+
+
 
 const cards = [
-  { id: "orders",    to: "orders",    icon: <IconBox />,      title: "Your Orders",      desc: "Track, return, or buy things again" },
-  { id: "profile",   to: "profile",   icon: <IconBox />,      title: "Your Profile",     desc: "Manage Account" },
-  { id: "security",  to: "security",  icon: <IconLock />,     title: "Login & Security", desc: "Edit login, name, and mobile number" },
-  { id: "addresses", to: "addresses", icon: <IconLocation />, title: "Your Addresses",   desc: "Edit addresses for orders and gifts" },
-  { id: "payment",   to: "payment",   icon: <IconCard />,     title: "Payment Options",  desc: "Edit or add payment methods" },
-  { id: "contact",   to: "contactUs",   icon: <IconHeadset />,  title: "Contact Us",       desc: "Contact customer service via phone or chat" },
+  { id: "profile", to: "profile", icon: <IconUser />, title: "Your Profile", desc: "Manage Account" },
+  { id: "orders", to: "orders", icon: <IconBox />, title: "Your Orders", desc: "Track, return, or buy things again" },
+  
+  { id: "security", to: "security", icon: <IconLock />, title: "Login & Security", desc: "Edit login, name, and mobile number" },
+  { id: "addresses", to: "addresses", icon: <IconLocation />, title: "Your Addresses", desc: "Edit addresses for orders and gifts" },
+  { id: "payment", to: "payment", icon: <IconCard />, title: "Payment Options", desc: "Edit or add payment methods" },
+  { id: "contact", to: "contactUs", icon: <IconHeadset />, title: "Contact Us", desc: "Contact customer service via phone or chat" },
+
 ];
 
 export default function Account() {
   const { logout } = useAuth();
-  const navigate   = useNavigate();
-  const location   = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth()
+  const active = location.pathname.replace("/account/", "");
+  const isBase = location.pathname === "/account";
 
-const active = location.pathname.replace("/account/", "");
-const isBase = location.pathname === "/account";
 
   const handleLogout = async () => {
     await logout();
     navigate('/login', { replace: true });
   };
 
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       <main className="max-w-7xl mx-auto px-4 py-8">
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Your Account</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6"> Hello! {user?.name}</h1>
 
         {/* Grid — original, untouched except Link replaces button */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
@@ -82,9 +95,9 @@ const isBase = location.pathname === "/account";
                             active:scale-95 transition-all duration-150
                             focus:outline-none focus:ring-2 focus:ring-amber-400
                             ${isActive
-                              ? 'border-amber-400 shadow-md ring-2 ring-amber-100'
-                              : 'border-gray-200 hover:shadow-md hover:border-amber-300'
-                            }`}
+                    ? 'border-amber-400 shadow-md ring-2 ring-amber-100'
+                    : 'border-gray-200 hover:shadow-md hover:border-amber-300'
+                  }`}
               >
                 <div className="shrink-0 mt-0.5">{card.icon}</div>
                 <div>

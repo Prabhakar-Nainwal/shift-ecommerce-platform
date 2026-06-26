@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate} from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -15,7 +15,7 @@ import Profile from "./components/account/Profile";
 import Orders from "./components/account/Orders";
 import Addresses from './components/account/Addresses.jsx'
 import ContactUs from './components/account/ContactUs.jsx'
-
+import ProtectedRoute from "./components/route/ProtectedRoute";
 export default function App() {
   return (
 
@@ -29,19 +29,22 @@ export default function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/contact" element={<Contact />} />
 
-          <Route path="/account" element={<Account />}>
-            <Route index element={<Navigate to="profile" replace />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="addresses" element={<Addresses />} />
-            <Route path="contactUs" element={<ContactUs />} />
-
+          <Route element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
+            <Route path="/account" element={<Account />}>
+              <Route index element={<Navigate to="profile" replace />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="addresses" element={<Addresses />} />
+              <Route path="contactUs" element={<ContactUs />} />
+            </Route>
           </Route>
-          
-      
+
           <Route path='/login' element={<Login />} />
           <Route path='/products/:id' element={<ProductDetail />} />
-          <Route path='/admin' element={<AdminDashboard />} />
+          
+          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Route>
 
           <Route path="*" element={<NoPageFound />} />
         </Routes>

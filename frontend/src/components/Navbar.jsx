@@ -49,11 +49,24 @@ export default function Navbar() {
               {l.label}
             </NavLink>
           ))}
+          {user?.role === "admin" && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                `text-[13px] font-medium uppercase tracking-widest transition-colors duration-200
+       relative after:absolute after:bottom-0 after:left-0 after:h-px after:bg-[#1A1A1A]
+       after:transition-all after:duration-300
+       ${isActive
+                  ? 'text-[#1A1A1A] after:w-full'
+                  : 'text-[#9A8C7E] hover:text-[#1A1A1A] after:w-0 hover:after:w-full'
+                }`
+              }
+            >
+              Manage
+            </NavLink>
+          )}
         </nav>
-
         <div className="flex items-center gap-1">
-
-
           <Link
             to="/cart"
             className="group relative p-2.5 rounded-md text-[#9A8C7E]
@@ -70,10 +83,7 @@ export default function Navbar() {
               </span>
             )}
           </Link>
-
-
-
-          {user ? <Link
+          <Link
             to="/account"
             className="group p-2.5 rounded-md text-[#9A8C7E]
                      transition-all duration-200
@@ -82,15 +92,6 @@ export default function Navbar() {
           >
             <CircleUserRound className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" />
           </Link>
-            : <Link
-              to="/login"
-              className="group p-2.5 rounded-md text-[#9A8C7E]
-                     transition-all duration-200
-                     hover:text-[#1A1A1A] hover:bg-[#F0ECE7]
-                     active:scale-95"
-            >
-              <LogIn className="w-5 h-5 transition-transform duration-200 group-hover:scale-110" /> LogIn
-            </Link>}
 
 
           <button
@@ -131,6 +132,15 @@ export default function Navbar() {
               {l.label}
             </NavLink>
           ))}
+          {user?.role === "admin" && (
+            <NavLink
+              to="/admin"
+              onClick={() => setOpen(false)}
+              className={({ isActive }) =>
+                `text-[13px] font-medium uppercase tracking-widest px-3 py-2.5 rounded-md transition-all duration-150${isActive ? 'text-[#1A1A1A] bg-[#F0ECE7]' : 'text-[#9A8C7E] hover:text-[#1A1A1A] hover:bg-[#F0ECE7]'}`}>
+              Manage
+            </NavLink>
+          )}
         </div>
       </div>
     </header>
