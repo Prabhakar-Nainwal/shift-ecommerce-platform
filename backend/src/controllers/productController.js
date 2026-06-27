@@ -1,23 +1,33 @@
 const productModel = require('../models/productModel')
+const uploadFile = require('../services/storageServices')
 
 const addProduct = async (req, res) => {
     try {
-        const product = await productModel.create(req.body)
+        const coverImage = req.files?.coverImage ? await uploadFile(req.files.coverImage[0]) : "";
+        const images = req.files?.images ? await Promise.all(req.files.images.map(uploadFile)) : [];
+        const product = await productModel.create({
+            ...req.body,
+            tags: JSON.parse(req.body.tags || "[]"),
+            highlights: JSON.parse(req.body.highlights || "[]"),
+            coverImage,
+            images,
+        });
         res.status(201).json({
             success: true,
             message: "Added product",
             data: product,
-        })
+        });
 
     } catch (error) {
-        console.error(error)
-        res.send(500).json({
+        console.error(error);
+
+        res.status(500).json({
             success: false,
             message: "failed to add product",
             error: error.message,
-        })
+        });
     }
-}
+};
 
 const getProducts = async (req, res) => {
     try {
@@ -122,28 +132,52 @@ const activateProduct = async (req, res) => {
 }
 const updateProduct = async (req, res) => {
     try {
-        const product = await productModel.findByIdAndUpdate(req.params.id, req.body, { new: true })
-        if (!product) {
-            res.status(404).json({
+
+        const oldProduct = await productModel.findById(req.params.id);
+
+        if (!oldProduct) {
+            return res.status(404).json({
                 success: false,
                 message: "product not found",
-
-            })
+            });
         }
+
+        const coverImage = req.files?.coverImage
+            ? await uploadFile(req.files.coverImage[0])
+            : oldProduct.coverImage;
+
+        const images = req.files?.images
+            ? await Promise.all(req.files.images.map(uploadFile))
+            : oldProduct.images;
+
+        const product = await productModel.findByIdAndUpdate(
+            req.params.id,
+            {
+                ...req.body,
+                tags: JSON.parse(req.body.tags || "[]"),
+                highlights: JSON.parse(req.body.highlights || "[]"),
+                coverImage,
+                images,
+            },
+            { new: true }
+        );
+
         res.status(200).json({
             success: true,
             message: "data updated",
             data: product,
-        })
+        });
+
     } catch (error) {
+        console.error(error);
+
         res.status(500).json({
             success: false,
             message: "server error",
             error: error.message,
-        })
+        });
     }
-}
-
+};
 
 module.exports = {
     addProduct, getProducts, getProduct, activateProduct,

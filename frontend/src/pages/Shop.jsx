@@ -30,16 +30,21 @@ export default function Shop() {
     fetchProducts();
   
   },[])
-  const categories = ["All", ...new Set(products.map(p => p.category))];
-  const filtered = products
-    .filter(p => activeCategory === 'All' || p.category === activeCategory)
-    .filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => {
-      if (sortBy === 'price-asc') return a.price - b.price
-      if (sortBy === 'price-desc') return b.price - a.price
-      if (sortBy === 'rating') return b.rating - a.rating
-      return 0
-    })
+const categories = [
+  "All",
+  ...new Set(products.filter(p => p.isActive).map(p => p.category))
+];
+
+const filtered = products
+  .filter(p => p.isActive)
+  .filter(p => activeCategory === "All" || p.category === activeCategory)
+  .filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+  .sort((a, b) => {
+    if (sortBy === "price-asc") return a.price - b.price;
+    if (sortBy === "price-desc") return b.price - a.price;
+    if (sortBy === "rating") return b.rating - a.rating;
+    return 0;
+  });
 
 return (
   <main className="max-w-7xl mx-auto px-8 py-14">

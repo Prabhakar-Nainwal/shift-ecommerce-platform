@@ -1,12 +1,21 @@
 const userModel = require('../models/userModel')
+const bcrypt = require('bcryptjs')
+
 const addUser = async (req, res) => {
     try {
+        const admin = await userModel.findById(req.user._id);
+        const ok = await bcrypt.compare(req.body.adminPassword, admin.password);
+        
+        if (!ok) {
+            return res.status(401).json({
+                message: "Invalid admin password"
+            });
+        }
         const user = await userModel.create(req.body);
         res.status(201).json({
             success: true,
             message: "successfull",
             data: user
-
         })
     } catch (error) {
         res.status(500).json({
@@ -76,7 +85,7 @@ const deleteUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
     try {
-        const user = await userModel.findByIdAndUpdate(req.params.id, req.body, { new: true })
+        const user = await userModel.findByIdAndUpdate(req.user._id, req.body, { new: true })
         res.status(200).json({
             success: true,
             data: user,

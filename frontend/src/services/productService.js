@@ -11,3 +11,11 @@ export const getProduct = (id) => {
 export const addProduct = (productData) => {
   return api.post('/products', productData)
 }
+
+export const updateProduct = (id, productData) => {
+  return api.patch(`/products/${id}`, productData)
+}
+
+export const deleteProduct = (id) => {
+  return api.delete(`/products/${id}`)
+}

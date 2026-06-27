@@ -4,12 +4,7 @@ require('dotenv').config()
 
 const isAdmin = async (req, res, next) => {
     try {
-        const token = req.cookie.token;
-        if (!token) {
-            return res.status(401).json({
-                message: "unauthorized"
-            })
-        }
+
         if (req.user.role !== "admin") {
             return res.status(403).json({
                 success: false,

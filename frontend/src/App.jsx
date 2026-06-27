@@ -29,6 +29,7 @@ export default function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/contact" element={<Contact />} />
 
+
           <Route element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
             <Route path="/account" element={<Account />}>
               <Route index element={<Navigate to="profile" replace />} />

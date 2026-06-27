@@ -13,3 +13,11 @@ export const updateAddresses = (addresses) => {
         addresses
     });
 };
+
+export const getUsers = ()=>{
+    return api.get("/users")
+}
+
+export const addUser = (userData)=>{
+    return api.post("/users",userData)
+}

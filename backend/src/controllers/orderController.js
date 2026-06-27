@@ -74,10 +74,81 @@ const cancelOrder = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+const getAllOrders = async (req, res) => {
+    try {
+
+        const orders = await Order.find()
+            .populate("user", "name email phone")
+            .populate("items.product", "name coverImage price rating")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            data: orders,
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+
+    }
+};
+const updateOrderStatus = async (req, res) => {
+    try {
+
+        const { status } = req.body;
+
+        const order = await Order.findById(req.params.id);
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found",
+            });
+        }
+
+        const flow = {
+            Pending: ["Processing", "Cancelled"],
+            Processing: ["Shipped", "Cancelled"],
+            Shipped: ["Delivered"],
+            Delivered: [],
+            Cancelled: [],
+        };
+
+        if (!flow[order.orderStatus].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: `Cannot change ${order.orderStatus} to ${status}`,
+            });
+        }
+
+        order.orderStatus = status;
+
+        await order.save();
+
+        res.json({
+            success: true,
+            data: order,
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+
+    }
+};
 
 module.exports = {
     createOrder,
     getMyOrders,
     getOrderById,
-    cancelOrder
+    cancelOrder,
+    getAllOrders,
+    updateOrderStatus
 };
