@@ -16,7 +16,18 @@
     transform: translateX(-100vw);
   }
 }
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50%      { transform: translateY(-14px) rotate(-5deg); }
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+
 
 .animate-slider {
   animation: slider 10s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(calc(-100% - 4rem)); }
 }

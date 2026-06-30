@@ -6,13 +6,13 @@ const client = new Imagekit({
     urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
 })
 
-const uploadFile = async (file) => {
+const uploadFile = async (file, folder ="Project_Urban_Shop/images/") => {
     if (!file) return null;
  
     const result = await client.upload({
         file: file.buffer,
         fileName: `${Date.now()}-${file.originalname}`,
-        folder: "Project_Urban_Shop/"
+        folder,
     })
     return result.url;
 }

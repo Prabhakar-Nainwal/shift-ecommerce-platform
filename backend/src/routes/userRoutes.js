@@ -1,4 +1,4 @@
-const {getUsers, getUser, updateUser, deleteUser, addUser,getAddresses,updateAddresses, getProfile} = require('../controllers/userController')
+const {getUsers, getUser, updateUser, deleteUser, addUser,getAddresses,updateAddresses, getProfile, changePassword,verifyChangePasswordOtp} = require('../controllers/userController')
 const protect = require('../middlewares/protect')
 const express = require('express')
 const router = express.Router()
@@ -6,7 +6,8 @@ const isAdmin = require('../middlewares/isAdmin')
 
 router.post("/",protect,isAdmin, addUser)
 
-
+router.post("/change-password", protect, changePassword);
+router.post("/verify-change-password-otp", protect, verifyChangePasswordOtp)
 router.get("/",protect,isAdmin,getUsers)
 router.get("/me",protect, getProfile)
 router.get("/address", protect, getAddresses);
