@@ -12,7 +12,7 @@ export default function Login() {
     e.preventDefault();
     try {
       await login(formData);
-      navigate("/shop", { replace: true });
+      navigate("/", { replace: true });
     } catch (error) {
       console.error(error);
       setMessage(error.response?.data?.message || "Invalid credentials. Try again.");

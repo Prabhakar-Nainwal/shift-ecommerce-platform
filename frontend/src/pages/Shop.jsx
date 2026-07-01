@@ -89,6 +89,7 @@ export default function Shop() {
       if (sortBy === "price-asc") return a.price - b.price;
       if (sortBy === "price-desc") return b.price - a.price;
       if (sortBy === "rating") return b.rating - a.rating;
+      if (sortBy === "discount") return b.discount - a.discount;
       return 0;
     });
 
@@ -211,6 +212,8 @@ export default function Shop() {
           <option value="price-asc">Price: Low to High</option>
           <option value="price-desc">Price: High to Low</option>
           <option value="rating">Top Rated</option>
+          <option value="discount">Most Discounted</option>
+
         </select>
       </div>
 

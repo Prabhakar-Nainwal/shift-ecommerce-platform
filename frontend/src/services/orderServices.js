@@ -4,8 +4,8 @@ export const createOrder = (cartData) => {
     return api.post("/orders", cartData )
 }
 
-export const getMyOrders = () => {
-    return api.get("/orders")
+export const getMyOrders = (page = 1, year = '') => {
+    return api.get(`/orders?page=${page}&year=${year}`)
 }
 
 export const getOrderById = (id) => {

@@ -18,10 +18,47 @@ const createOrder = async (req, res) => {
 
 const getMyOrders = async (req, res) => {
     try {
-        const orders = await Order.find({ user: req.user._id })
+        const userId = req.user._id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const query = { user: userId };
+
+        if (req.query.year) {
+            const year = parseInt(req.query.year);
+            query.createdAt = {
+                $gte: new Date(`${year}-01-01T00:00:00.000Z`),
+                $lte: new Date(`${year}-12-31T23:59:59.999Z`)
+            };
+        }
+
+        const orders = await Order.find(query)
             .populate("items.product", "name images price")
-            .sort({ createdAt: -1 });
-        res.json(orders);
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const yearPipeline = [
+            { $match: { user: userId } },
+            { $project: { year: { $year: "$createdAt" } } },
+            { $group: { _id: null, uniqueYears: { $addToSet: "$year" } } }
+        ];
+
+        const yearResult = await Order.aggregate(yearPipeline);
+
+        let availableYears = yearResult[0]?.uniqueYears || [];
+        availableYears.sort((a, b) => b - a);
+
+        const currentYear = new Date().getFullYear();
+        if (!availableYears.includes(currentYear)) {
+            availableYears.unshift(currentYear);
+        }
+        res.json({
+            data: orders,
+            availableYears: availableYears
+        });
+
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -4,21 +4,44 @@ const User = require("../models/userModel");
 
 const getSummary = async (req, res) => {
   try {
-    const deliveredOrders = await Order.find({ orderStatus: "Delivered" });
-    const revenue = deliveredOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+    const last30Days = new Date();
+    last30Days.setDate(last30Days.getDate() - 30);
+
+    const [stats] = await Order.aggregate([
+      {
+        $match: {
+          orderStatus: "Delivered",
+          createdAt: { $gte: last30Days },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          revenue: { $sum: "$totalAmount" },
+          orders: { $sum: 1 },
+        },
+      },
+    ]);
+
     const summary = {
-      revenue,
-      orders: deliveredOrders.length,
+      revenue: stats?.revenue || 0,
+      orders: stats?.orders || 0,
       products: await Product.countDocuments(),
-      customers: await User.countDocuments({ role: "user" })
+      customers: await User.countDocuments({ role: "user" }),
     };
-    res.status(200).json({ success: true, summary });
+
+    res.status(200).json({
+      success: true,
+      summary,
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
-
 const getStatistics = async (req, res) => {
   try {
     const { start, end } = req.query;
