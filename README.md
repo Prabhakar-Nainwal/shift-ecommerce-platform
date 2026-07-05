@@ -39,27 +39,27 @@ A full-stack MERN e-commerce application that provides a secure online shopping 
   <tr>
     <td width="50%" align="center">
       <img src="screenshots/1.png" alt="Screenshot 1" width="100%"/>
-      <br><b>User Authentication / Homepage</b>
+      <br><b>Homepage</b>
     </td>
     <td width="50%" align="center">
       <img src="screenshots/2.png" alt="Screenshot 2" width="100%"/>
-      <br><b>Product Browsing & Shop</b>
+      
     </td>
   </tr>
   <tr>
     <td width="50%" align="center">
       <img src="screenshots/3.png" alt="Screenshot 3" width="100%"/>
-      <br><b>Shopping Cart & Checkout</b>
+      
     </td>
     <td width="50%" align="center">
       <img src="screenshots/4.png" alt="Screenshot 4" width="100%"/>
-      <br><b>Payment Gateway Integration</b>
+     
     </td>
   </tr>
   <tr>
     <td colspan="2" align="center" width="100%">
       <img src="screenshots/5.png" alt="Screenshot 5" width="50%"/>
-      <br><b>Admin Dashboard & Analytics</b>
+      
     </td>
   </tr>
 </table>
