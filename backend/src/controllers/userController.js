@@ -55,7 +55,7 @@ const deleteUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const user = await userModel.findByIdAndUpdate(req.user._id, req.body, { new: true });
+    const user = await userModel.findByIdAndUpdate(req.user._id, req.body, { returnDocument: 'after' });
     res.status(200).json({ success: true, data: user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

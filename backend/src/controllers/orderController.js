@@ -1,15 +1,40 @@
 const Order = require("../models/orderModel");
+const Payment = require("../models/paymentModel");
+const cashfreeService = require("../services/cashfreeService");
+const { sendOrderConfirmationEmail } = require("../services/orderEmailService");
 
 const createOrder = async (req, res) => {
     try {
-        const { items, shippingAddress, totalAmount } = req.body;
+        const { items, shippingAddress, totalAmount, paymentMethod } = req.body;
         if (!items || items.length === 0) return res.status(400).json({ message: "Order items are required." });
+
+        if (!paymentMethod || !["COD", "Online"].includes(paymentMethod)) {
+            return res.status(400).json({ message: "A valid payment method (COD or Online) is required." });
+        }
+
+        // Online payment requires a phone number on file, since it's passed to Cashfree
+        if (paymentMethod === "Online" && !req.user.phone) {
+            return res.status(400).json({
+                message: "Please add a phone number to your account before choosing online payment."
+            });
+        }
+
         const order = await Order.create({
             user: req.user._id,
             items,
             shippingAddress,
-            totalAmount
+            totalAmount,
+            paymentMethod
         });
+
+        if (paymentMethod === "COD") {
+            // COD orders are confirmed immediately - email right away
+            await sendOrderConfirmationEmail(order, req.user, "COD");
+        }
+        // For "Online" orders, the order stays in Pending/Pending state and is only
+        // confirmed (paymentStatus: "Paid") once /api/payments/verify or the
+        // Cashfree webhook reports a successful payment - see paymentController.js
+
         res.status(201).json(order);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -84,10 +109,60 @@ const cancelOrder = async (req, res) => {
             user: req.user._id
         });
         if (!order) return res.status(404).json({ message: "Order not found." });
-        if (["Shipped", "Delivered"].includes(order.orderStatus)) {
+        if (["Shipped", "Delivered", "Cancelled"].includes(order.orderStatus)) {
             return res.status(400).json({ message: "This order cannot be cancelled." });
         }
+
         order.orderStatus = "Cancelled";
+
+        // Auto-refund: only for orders that were paid online, and only once.
+        if (order.paymentMethod === "Online" && order.paymentStatus === "Paid") {
+            const payment = await Payment.findOne({ order: order._id });
+
+            if (payment && payment.refund.status === "Not Initiated") {
+                try {
+                    const refundId = `RF${order.orderId.replace(/-/g, "")}${Date.now().toString().slice(-6)}`;
+
+                    const refundResponse = await cashfreeService.initiateRefund({
+                        cfOrderId: payment.cfOrderId,
+                        refundId,
+                        amount: order.totalAmount,
+                        note: "Order cancelled by customer"
+                    });
+
+                    const isImmediatelySuccessful = refundResponse.refund_status === "SUCCESS";
+
+                    payment.refund.status = isImmediatelySuccessful ? "Success" : "Initiated";
+                    payment.refund.refundId = refundId;
+                    payment.refund.cfRefundId = refundResponse.cf_refund_id;
+                    payment.refund.amount = order.totalAmount;
+                    payment.refund.reason = "Order cancelled by customer";
+                    payment.refund.gatewayResponse = refundResponse;
+                    if (isImmediatelySuccessful) payment.refund.processedAt = new Date();
+                    await payment.save();
+
+                    order.refundStatus = payment.refund.status;
+                    order.refundDetails = {
+                        refundId,
+                        amount: order.totalAmount,
+                        reason: "Order cancelled by customer",
+                        processedAt: payment.refund.processedAt
+                    };
+                    if (isImmediatelySuccessful) order.paymentStatus = "Refunded";
+                    // Otherwise the REFUND_STATUS_WEBHOOK will finalize the status async.
+                } catch (refundError) {
+                    // Refund failure shouldn't block the cancellation itself - flag it
+                    // for manual follow-up instead of silently losing the request.
+                    console.error("Cashfree refund initiation failed:", refundError.response?.data || refundError.message);
+                    payment.refund.status = "Failed";
+                    payment.refund.gatewayResponse = refundError.response?.data || { message: refundError.message };
+                    await payment.save();
+                    order.refundStatus = "Failed";
+                }
+            }
+            // If a refund was already initiated/succeeded/failed before, we don't trigger another one.
+        }
+
         await order.save();
         res.json({ message: "Order cancelled successfully.", order });
     } catch (error) {

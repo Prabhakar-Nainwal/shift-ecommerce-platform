@@ -79,7 +79,7 @@ const deleteProduct = async (req, res) => {
 
 const deactivateProduct = async (req, res) => {
   try {
-    const product = await productModel.findByIdAndUpdate(req.params.id, { isActive: false }, { new: true });
+    const product = await productModel.findByIdAndUpdate(req.params.id, { isActive: false }, { returnDocument: 'after' });
     if (!product) {
       return res.status(404).json({ success: false, message: "product not found" });
     }
@@ -91,7 +91,7 @@ const deactivateProduct = async (req, res) => {
 
 const activateProduct = async (req, res) => {
   try {
-    const product = await productModel.findByIdAndUpdate(req.params.id, { isActive: true }, { new: true });
+    const product = await productModel.findByIdAndUpdate(req.params.id, { isActive: true }, { returnDocument: 'after' });
     if (!product) {
       return res.status(404).json({ success: false, message: "product not found" });
     }
@@ -129,7 +129,7 @@ const updateProduct = async (req, res) => {
         images,
         discount
       },
-      { new: true }
+      { returnDocument: 'after' }
     );
     res.status(200).json({ success: true, message: "data updated", data: product });
   } catch (error) {

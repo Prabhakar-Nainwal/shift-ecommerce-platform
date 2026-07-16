@@ -1,12 +1,12 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import Navbar from './components/Navbar'
-import Footer from './components/Footer'
+import Navbar from './components/layout/Navbar'
+import Footer from './components/layout/Footer'
 import Home from './pages/Home'
 import Shop from './pages/Shop'
 import Cart from './pages/Cart'
 import Contact from './pages/Contact'
 import NoPageFound from './pages/NoPageFound'
-import ScrollToTop from './components/ScrollToTop'
+import ScrollToTop from './components/layout/ScrollToTop.jsx'
 import Account from './pages/Account'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -26,6 +26,7 @@ import ProductsTab from "./components/admin/ProductsTab.jsx"
 import UsersTab from "./components/admin/UsersTab.jsx"
 import OrdersTab from "./components/admin/OrdersTab.jsx"
 import ForgotPassword from './pages/ForgetPassword.jsx'
+import PaymentCallback from './pages/PaymentCallback.jsx'
 
 
 
@@ -57,6 +58,7 @@ export default function App() {
               <Route path="payment" element={<Payments />} />
               <Route path="security" element={<Security />} />
             </Route>
+            <Route path="/payment/callback" element={<PaymentCallback />} />
           </Route>
 
           <Route path='/products/:id' element={<ProductDetail />} />

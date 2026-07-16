@@ -2,7 +2,7 @@ const userModel = require('../models/userModel')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const otpModel = require("../models/otpModel");
-const { generateOtp, getOtpHtml } = require("../utils/utils");
+const { generateOtp, getOtpHtml, isValidPhone } = require("../utils/utils");
 const { sendEmail } = require("../services/emailService");
 
 
@@ -10,11 +10,17 @@ require('dotenv').config()
 
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
-        if (!name || !email || !password) {
+        const { name, email, password, phone } = req.body;
+        if (!name || !email || !password || !phone) {
             return res.status(400).json({
                 success: false,
                 message: "All fields are required"
+            });
+        }
+        if (!isValidPhone(phone)) {
+            return res.status(400).json({
+                success: false,
+                message: "Please enter a valid 10-digit phone number"
             });
         }
         const existingUser = await userModel.findOne({ email });
@@ -22,6 +28,13 @@ const registerUser = async (req, res) => {
             return res.status(409).json({
                 success: false,
                 message: "User already exists"
+            });
+        }
+        const existingPhone = await userModel.findOne({ phone });
+        if (existingPhone) {
+            return res.status(409).json({
+                success: false,
+                message: "Phone number is already registered"
             });
         }
         await otpModel.findOneAndDelete({ email });
@@ -34,6 +47,7 @@ const registerUser = async (req, res) => {
         await otpModel.create({
             name,
             email,
+            phone,
             password: hashedPassword,
             otp: hashedOtp,
             purpose:"register",
@@ -157,6 +171,7 @@ const verifyOtp = async (req, res) => {
         const user = await userModel.create({
             name: pendingUser.name,
             email: pendingUser.email,
+            phone: pendingUser.phone,
             password: pendingUser.password
         });
 

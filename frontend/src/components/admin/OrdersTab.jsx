@@ -2,7 +2,7 @@ import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Search } from "lucid
 import { useEffect, useState } from "react";
 import { getAllOrders, updateOrderStatus } from "../../services/orderServices";
 import React from "react";
-import Loader from "../Loader";
+import Loader from "../layout/Loader";
 
 const PAGE_SIZE = 10;
 

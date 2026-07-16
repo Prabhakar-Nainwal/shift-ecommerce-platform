@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom'
 import { getNewProducts, getBestDeals } from '../services/productService'
 import { useState, useEffect } from 'react'
-import ProductsDisplayCard from '../components/store/ProductsDisplayCard'
-import BodySection from '../components/BodySection'
-import HeroSection from '../components/HeroSection'
+import ProductsDisplayCard from '../components/Home/ProductsDisplayCard'
+import BodySection from '../components/Home/BodySection'
+import HeroSection from '../components/Home/HeroSection'
 import { ArrowRight } from 'lucide-react'
-import CategorySection from '../components/store/CategorySection'
+import CategorySection from '../components/Home/CategorySection'
 import { getCategories } from '../services/categoryServices'
 
 

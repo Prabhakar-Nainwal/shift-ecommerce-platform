@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Search, Package, ChevronLeft, ChevronRight } from "lucide-react";
 import { getProducts } from "../../services/productService";
 import AddProduct from "./AddProduct";
-import Loader from "../Loader";
+import Loader from "../layout/Loader";
 import { getCategories } from "../../services/categoryServices";
 
 const PAGE_SIZE = 12;

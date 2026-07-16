@@ -7,7 +7,11 @@ const userSchema = mongoose.Schema({
     password: { type: String, required: true},
     role: { type: String, enum: ["user", "admin"], default: "user" },
     avatar: String,
-    phone: { type: String, trim: true },
+    phone: {
+        type: String,
+        trim: true,
+        match: [/^[6-9]\d{9}$/, "Please enter a valid 10-digit phone number"]
+    },
     isActive: { type: Boolean, default: true },
     lastLogin: Date,
     addresses: [{

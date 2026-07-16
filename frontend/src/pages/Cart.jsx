@@ -1,7 +1,9 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
-import { Trash2, ShoppingBag, ArrowRight, Tag, X, Minus, Plus } from 'lucide-react'
+import { Trash2, ShoppingBag, ArrowRight, Tag, X, Minus, Plus, Truck, CreditCard, Loader2 } from 'lucide-react'
 import { createOrder } from '../services/orderServices'
+import { createPaymentSession } from '../services/paymentServices'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
@@ -10,9 +12,13 @@ export default function Cart({ isOpen, onClose }) {
   const { cartItems, removeFromCart, updateQty, total, clearCart } = useCart()
   const { user } = useAuth()
   const navigate = useNavigate();
+  const [paymentMethod, setPaymentMethod] = useState('COD')
+  const [placingOrder, setPlacingOrder] = useState(false)
+  const [checkoutError, setCheckoutError] = useState('')
 
   const handleCheckout = async () => {
     try {
+      setCheckoutError('')
       if (cartItems.length === 0) return;
       const defaultAddress = user.addresses.find(
         address => address.isDefault
@@ -24,7 +30,15 @@ export default function Cart({ isOpen, onClose }) {
         onClose(); 
         return;
       }
-      const order = {
+
+      if (paymentMethod === 'Online' && !user.phone) {
+        setCheckoutError("Please add a phone number to your account before paying online.");
+        return;
+      }
+
+      setPlacingOrder(true);
+
+      const orderPayload = {
         items: cartItems.map(item => ({
           product: item.product._id,
           name: item.product.name,
@@ -33,14 +47,43 @@ export default function Cart({ isOpen, onClose }) {
           quantity: item.quantity
         })),
         shippingAddress: defaultAddress,
-        totalAmount: total >= 50 ? total : total + 5
+        totalAmount: total >= 50 ? total : total + 5,
+        paymentMethod
       };
-      const res = await createOrder(order);
-      clearCart();
-      navigate("/account/orders");
-      onClose(); 
+
+      const res = await createOrder(orderPayload);
+      const order = res.data;
+      await clearCart();
+
+      if (paymentMethod === 'COD') {
+        navigate("/account/orders");
+        onClose();
+        return;
+      }
+
+      // Online payment: create the Cashfree session, then launch the drop-in checkout
+      const sessionRes = await createPaymentSession(order._id);
+      const { paymentSessionId } = sessionRes.data.data;
+
+      if (!window.Cashfree) {
+        setCheckoutError("Payment SDK failed to load. You can retry payment from My Orders.");
+        setPlacingOrder(false);
+        navigate("/account/orders");
+        onClose();
+        return;
+      }
+
+      const cashfree = window.Cashfree({ mode: import.meta.env.VITE_CASHFREE_MODE || "sandbox" });
+      onClose();
+      cashfree.checkout({
+        paymentSessionId,
+        redirectTarget: "_self"
+      });
     } catch (err) {
       console.log(err);
+      setCheckoutError(err.response?.data?.message || "Something went wrong. Please try again.");
+    } finally {
+      setPlacingOrder(false);
     }
   };
 
@@ -183,13 +226,65 @@ export default function Cart({ isOpen, onClose }) {
                 </div>
               </div>
 
+              {/* Payment method selection */}
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Payment Method</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('COD')}
+                    className={`flex items-center justify-center gap-1.5 py-2.5 rounded border text-xs font-bold uppercase tracking-wide transition-colors ${
+                      paymentMethod === 'COD'
+                        ? 'border-zinc-900 bg-zinc-900 text-white'
+                        : 'border-zinc-200 bg-white text-zinc-500 hover:border-zinc-400'
+                    }`}
+                  >
+                    <Truck className="w-3.5 h-3.5" />
+                    Cash on Delivery
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('Online')}
+                    className={`flex items-center justify-center gap-1.5 py-2.5 rounded border text-xs font-bold uppercase tracking-wide transition-colors ${
+                      paymentMethod === 'Online'
+                        ? 'border-zinc-900 bg-zinc-900 text-white'
+                        : 'border-zinc-200 bg-white text-zinc-500 hover:border-zinc-400'
+                    }`}
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    Pay Online
+                  </button>
+                </div>
+                {paymentMethod === 'Online' && !user?.phone && (
+                  <p className="text-[11px] text-red-600">
+                    Add a phone number to your account (Account &rarr; Security) to pay online.
+                  </p>
+                )}
+              </div>
+
+              {checkoutError && (
+                <div className="text-xs text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
+                  {checkoutError}
+                </div>
+              )}
+
               <div className="pt-2 space-y-2">
                 <button
                   onClick={handleCheckout}
-                  className="w-full bg-zinc-900 text-white py-3 rounded text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-zinc-800 transition-colors shadow-sm"
+                  disabled={placingOrder}
+                  className="w-full bg-zinc-900 text-white py-3 rounded text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-zinc-800 transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  <span>Proceed to Checkout</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  {placingOrder ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{paymentMethod === 'Online' ? 'Proceed to Payment' : 'Place Order'}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={onClose}

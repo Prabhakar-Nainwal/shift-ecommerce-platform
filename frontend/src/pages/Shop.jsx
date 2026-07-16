@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { getProducts } from '../services/productService'
-import ProductCard from '../components/ProductCard'
+import ProductCard from '../components/product/ProductCard'
 import { Search } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom' 
-import Loader from '../components/Loader'
+import Loader from '../components/layout/Loader'
 import { getCategories } from "../services/categoryServices"
 
 export default function Shop() {
@@ -16,8 +16,10 @@ export default function Shop() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([]);
   const [isCategoryInitialized, setIsCategoryInitialized] = useState(false);
+  
   const location = useLocation();
   const scrollContainerRef = useRef(null);
+  const observerTargetRef = useRef(null);
 
   const fetchCategories = async () => {
     try {
@@ -54,7 +56,6 @@ export default function Shop() {
     fetchCategories();
   }, [location.search]);
 
-
   useEffect(() => {
     if (!isCategoryInitialized) return;
 
@@ -75,12 +76,29 @@ export default function Shop() {
 
   useEffect(() => {
     if (!hasMore || loading) return;
-    const handleScroll = () => {
-      const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100;
-      if (isAtBottom) setPage(prev => prev + 1);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      { 
+        rootMargin: '200px', 
+        threshold: 0 
+      }
+    );
+
+    const currentTarget = observerTargetRef.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
   }, [hasMore, loading]);
 
   const filtered = products
@@ -104,10 +122,9 @@ export default function Shop() {
     setActiveCategory(catId);
   };
 
-  // Scroll handler functions
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
-      const scrollAmount = 300; // Adjust scroll distance per click
+      const scrollAmount = 300;
       scrollContainerRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
@@ -154,7 +171,6 @@ export default function Shop() {
                 onClick={() => handleCategoryChange(cat._id)}
                 className="group flex flex-col items-center flex-shrink-0 w-24 md:w-28 text-center snap-start focus:outline-none"
               >
-                {/* Circle Image Container */}
                 <div className="relative w-16 h-16 md:w-20 md:h-20 flex items-center justify-center mb-3">
                   <div
                     className={`absolute inset-0 rounded-full transition-all duration-300
@@ -164,7 +180,6 @@ export default function Shop() {
                       }`}
                   />
 
-                  {/* Category Icon / Image */}
                   {cat.image ? (
                     <img
                       src={cat.image}
@@ -178,7 +193,6 @@ export default function Shop() {
                   )}
                 </div>
 
-                {/* Category Label */}
                 <span
                   className={`text-xs md:text-sm font-semibold tracking-tight px-1 transition-colors duration-200 line-clamp-2 min-h-[2.5rem]
                     ${isActive ? 'text-[#E8001C] font-bold' : 'text-slate-600 group-hover:text-slate-900'}`}
@@ -213,7 +227,6 @@ export default function Shop() {
           <option value="price-desc">Price: High to Low</option>
           <option value="rating">Top Rated</option>
           <option value="discount">Most Discounted</option>
-
         </select>
       </div>
 
@@ -232,15 +245,18 @@ export default function Shop() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8">
-          {filtered.map(p => (
-            <Link to={`/products/${p._id}`} key={p._id} className="group product-card-link">
-              <div className="[&_img]:transition-transform [&_img]:duration-500 [&_img]:ease-out [&_img]:group-hover:scale-110 [&_img]:w-full [&_img]:h-full [&_img]:object-contain">
-                <ProductCard product={p} />
-              </div>
-            </Link>
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8">
+            {filtered.map(p => (
+              <Link to={`/products/${p._id}`} key={p._id} className="group product-card-link">
+                <div className="[&_img]:transition-transform [&_img]:duration-500 [&_img]:ease-out [&_img]:group-hover:scale-110 [&_img]:w-full [&_img]:h-full [&_img]:object-contain">
+                  <ProductCard product={p} />
+                </div>
+              </Link>
+            ))}
+          </div>
+          <div ref={observerTargetRef} className="h-4 w-full" />
+        </>
       )}
 
       {loading && page > 1 && products.length > 0 && (

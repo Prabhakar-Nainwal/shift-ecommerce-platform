@@ -23,8 +23,21 @@ const orderSchema = new mongoose.Schema(
             country: { type: String, default: "India" }
         },
         totalAmount: { type: Number, required: true },
+        paymentMethod: { type: String, enum: ["COD", "Online"], default: "COD" },
+        payment: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
         paymentStatus: { type: String, enum: ["Pending", "Paid", "Failed", "Refunded"], default: "Pending" },
-        orderStatus: { type: String, enum: ["Pending", "Processing", "Shipped", "Out For Delivery", "Delivered", "Cancelled"], default: "Pending" }
+        orderStatus: { type: String, enum: ["Pending", "Processing", "Shipped", "Out For Delivery", "Delivered", "Cancelled"], default: "Pending" },
+        refundStatus: {
+            type: String,
+            enum: ["Not Initiated", "Initiated", "Processing", "Success", "Failed"],
+            default: "Not Initiated"
+        },
+        refundDetails: {
+            refundId: String,
+            amount: Number,
+            reason: String,
+            processedAt: Date
+        }
     },
     { timestamps: true }
 );

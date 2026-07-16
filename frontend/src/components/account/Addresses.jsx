@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { MapPin, Phone, Plus, Pencil, Trash2, Check, X, Star } from 'lucide-react'
 import { getAddresses, updateAddresses } from "../../services/userServices"
-
+import { useAuth } from '../../context/AuthContext'
 const EMPTY_FORM = {
   fullName: '', phone: '',
   addressLine1: '', addressLine2: '',
@@ -12,24 +12,24 @@ const EMPTY_FORM = {
 const inputCls = "w-full px-3 py-2 border border-[#D5D9D9] rounded text-sm text-[#0F1111] placeholder:text-[#767676] focus:outline-none focus:border-[#007185] focus:ring-2 focus:ring-[#007185]/20 transition"
 
 const FIELDS = [
-  { label: 'Full name',        name: 'fullName',     placeholder: 'Full name',                 half: true  },
-  { label: 'Phone number',     name: 'phone',        placeholder: 'Phone number',              half: true  },
-  { label: 'Address line 1',   name: 'addressLine1', placeholder: 'House no., Street',         half: false },
-  { label: 'Address line 2',   name: 'addressLine2', placeholder: 'Area, Landmark (optional)', half: false },
-  { label: 'City',             name: 'city',         placeholder: 'City',                      half: true  },
-  { label: 'State',            name: 'state',        placeholder: 'State',                     half: true  },
-  { label: 'Pincode',          name: 'pincode',      placeholder: 'Pincode',                   half: true  },
-  { label: 'Country',          name: 'country',      placeholder: 'Country',                   half: true  },
+  { label: 'Full name', name: 'fullName', placeholder: 'Full name', half: true },
+  { label: 'Phone number', name: 'phone', placeholder: 'Phone number', half: true },
+  { label: 'Address line 1', name: 'addressLine1', placeholder: 'House no., Street', half: false },
+  { label: 'Address line 2', name: 'addressLine2', placeholder: 'Area, Landmark (optional)', half: false },
+  { label: 'City', name: 'city', placeholder: 'City', half: true },
+  { label: 'State', name: 'state', placeholder: 'State', half: true },
+  { label: 'Pincode', name: 'pincode', placeholder: 'Pincode', half: true },
+  { label: 'Country', name: 'country', placeholder: 'Country', half: true },
 ]
 
 function AddressForm({ initial, onSave, onCancel, isNew }) {
+  
   const [form, setForm] = useState({ ...(initial || EMPTY_FORM) })
 
   const handle = (e) => {
     const { name, value, type, checked } = e.target
     setForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }))
   }
-
   return (
     <div className="border border-[#D5D9D9] rounded-lg overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 bg-[#F0F2F2] border-b border-[#D5D9D9]">
@@ -77,6 +77,7 @@ export default function Addresses() {
   const [addresses, setAddresses] = useState([])
   const [editingId, setEditingId] = useState(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const { fetchUser } = useAuth()
 
   useEffect(() => {
     fetchAddresses();
@@ -95,6 +96,7 @@ export default function Addresses() {
     try {
       await updateAddresses(updatedAddresses);
       await fetchAddresses();
+      await fetchUser();
     } catch (err) {
       console.log(err);
     }
@@ -110,7 +112,7 @@ export default function Addresses() {
       const list = form.isDefault ? addresses.map(a => ({ ...a, isDefault: false })) : addresses
       updatedList = list.map(a => a._id === editingId ? { ...form, _id: a._id } : a)
     }
-    
+
     setEditingId(null)
     setAddresses(updatedList);
     await saveToBackend(updatedList)
@@ -179,11 +181,11 @@ export default function Addresses() {
               </p>
 
               <div className="flex items-center gap-0.5 pt-3 border-t border-[#E7E7E7] text-xs">
-                <button 
+                <button
                   onClick={() => {
                     setConfirmDeleteId(null);
                     setEditingId(addr._id);
-                  }} 
+                  }}
                   className="flex items-center gap-1 px-2.5 py-1 text-[#007185] hover:underline"
                 >
                   <Pencil className="w-3 h-3" /> Edit

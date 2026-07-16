@@ -1,4 +1,6 @@
-import { ArrowLeft, MapPin, X, Clock, Package, Truck, Home, CheckCircle, ShoppingBag } from 'lucide-react'
+import { useState } from 'react'
+import { ArrowLeft, MapPin, X, Clock, Package, Truck, Home, CheckCircle, ShoppingBag, CreditCard, Loader2 } from 'lucide-react'
+import { createPaymentSession } from '../../services/paymentServices'
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS = {
@@ -11,9 +13,10 @@ const STATUS = {
 }
 
 const PAYMENT = {
-  Paid:    { bg: '#E8F5E9', text: '#1B5E20' },
-  Pending: { bg: '#FFF3E0', text: '#E65100' },
-  Failed:  { bg: '#FFEBEE', text: '#B71C1C' },
+  Paid:     { bg: '#E8F5E9', text: '#1B5E20' },
+  Pending:  { bg: '#FFF3E0', text: '#E65100' },
+  Failed:   { bg: '#FFEBEE', text: '#B71C1C' },
+  Refunded: { bg: '#E3F2FD', text: '#0D47A1' },
 }
 
 const STEPS = [
@@ -121,8 +124,36 @@ function OrderTimeline({ status }) {
 }
 // ─── Main Export ──────────────────────────────────────────────────────────────
 export default function OrderDetails({ order, onBack, onCancel }) {
-  const { shippingAddress: a, items, orderStatus, paymentStatus, totalAmount, createdAt, orderId } = order
+  const { shippingAddress: a, items, orderStatus, paymentStatus, paymentMethod, refundStatus, totalAmount, createdAt, orderId } = order
   const canCancel = ['Pending', 'Processing'].includes(orderStatus)
+  const canRetryPayment = paymentMethod === 'Online' && ['Pending', 'Failed'].includes(paymentStatus) && orderStatus !== 'Cancelled'
+
+  const [payingNow, setPayingNow] = useState(false)
+  const [payError, setPayError] = useState('')
+
+  const handlePayNow = async () => {
+    try {
+      setPayError('')
+      setPayingNow(true)
+      const res = await createPaymentSession(order._id)
+      const { paymentSessionId } = res.data.data
+
+      if (!window.Cashfree) {
+        setPayError('Payment SDK failed to load. Please refresh and try again.')
+        setPayingNow(false)
+        return
+      }
+
+      const cashfree = window.Cashfree({ mode: import.meta.env.VITE_CASHFREE_MODE || 'sandbox' })
+      cashfree.checkout({
+        paymentSessionId,
+        redirectTarget: '_self'
+      })
+    } catch (err) {
+      setPayError(err.response?.data?.message || 'Could not start payment. Please try again.')
+      setPayingNow(false)
+    }
+  }
 
   return (
     <div className="bg-[#F1F3F6] min-h-screen rounded-2xl p-4">
@@ -154,9 +185,40 @@ export default function OrderDetails({ order, onBack, onCancel }) {
             >
               Payment: {paymentStatus}
             </span>
+            <span className="text-[11px] text-[#878787]">
+              {paymentMethod === 'Online' ? 'Paid Online' : 'Cash on Delivery'}
+            </span>
+            {refundStatus && refundStatus !== 'Not Initiated' && (
+              <span className="text-[11px] font-medium text-[#0D47A1]">
+                Refund: {refundStatus}
+              </span>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Pay Now - shown when an online order still needs to be paid */}
+      {canRetryPayment && (
+        <div className="bg-white rounded-lg p-4 mb-3 shadow-sm flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-[#212121]">Complete Your Payment</p>
+            <p className="text-xs mt-0.5 text-[#878787]">
+              {paymentStatus === 'Failed'
+                ? 'Your last payment attempt failed. You can try again.'
+                : 'This order is awaiting payment.'}
+            </p>
+            {payError && <p className="text-xs mt-1 text-[#B71C1C]">{payError}</p>}
+          </div>
+          <button
+            onClick={handlePayNow}
+            disabled={payingNow}
+            className="flex items-center gap-1.5 px-4 py-2 rounded text-sm font-bold transition-all duration-150 active:scale-95 bg-[#2874F0] text-white disabled:opacity-60"
+          >
+            {payingNow ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CreditCard className="w-3.5 h-3.5" />}
+            {payingNow ? 'Redirecting...' : 'Pay Now'}
+          </button>
+        </div>
+      )}
 
       {/* Order tracking timeline */}
       <div className="bg-white rounded-lg p-5 mb-3 shadow-sm">

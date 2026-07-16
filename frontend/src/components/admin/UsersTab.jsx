@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 import { Search, X, UserPlus, Loader2 } from "lucide-react";
-import Loader from "../Loader";
+import Loader from "../layout/Loader";
 import { usersData } from "../../data/dashboardData";
 import { useEffect } from "react";
 import { getUsers, addUser } from "../../services/userServices";

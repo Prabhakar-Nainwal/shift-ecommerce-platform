@@ -10,13 +10,22 @@ const cartRoutes = require('./routes/cartRoutes')
 const orderRoutes = require('./routes/orderRoutes')
 const statisticsRoutes = require('./routes/statisticsRoutes')
 const categoryRoutes = require('./routes/categoryRoutes')
-//middlewares
+const paymentRoutes = require('./routes/paymentRoutes')
+const helmet = require("helmet")
+const compression = require("compression")
+
+//middlewaress
 app.use(cors({
   origin: process.env.FRONTEND_URL,
   credentials: true,
 }));
-app.use(express.json())
+
+app.use(express.json({
+  verify: (req, res, buf) => { req.rawBody = buf.toString(); }
+}))
 app.use(cookieParser())
+app.use(helmet());
+app.use(compression());
 
 //routes
 app.use("/api/products", productRoutes)
@@ -26,4 +35,5 @@ app.use("/api/cart",cartRoutes)
 app.use("/api/orders",orderRoutes)
 app.use("/api/statistics",statisticsRoutes)
 app.use("/api/categories",categoryRoutes)
+app.use("/api/payments",paymentRoutes)
 module.exports = app;

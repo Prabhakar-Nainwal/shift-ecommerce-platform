@@ -5,7 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 export default function Register() {
   const navigate = useNavigate();
   const { register } = useAuth(); 
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", password: "" });
   const [message, setMessage] = useState("");
 
   const handleSubmit = async (e) => {
@@ -54,6 +54,19 @@ export default function Register() {
             name="email"
             value={formData.email}
             onChange={handleChange}
+            required
+          />
+
+          <input
+            type="tel"
+            placeholder="Phone Number"
+            className="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-400"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            maxLength="10"
+            pattern="[6-9]\d{9}"
+            title="Enter a valid 10-digit phone number"
             required
           />
 

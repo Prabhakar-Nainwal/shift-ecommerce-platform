@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Pencil, Plus, ImagePlus } from "lucide-react";
 import { getCategories, createCategory, updateCategory } from "../../services/categoryServices";
-import Loader from "../Loader";
+import Loader from "../layout/Loader";
 
 const CategoryTab = () => {
   const [categories, setCategories] = useState([]);
